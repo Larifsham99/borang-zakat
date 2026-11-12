@@ -1,185 +1,578 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="ms">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Penjana Borang LZNK - Pondok/Madrasah</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
-    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-    <style>
-        /* Tetapan saiz A4 untuk paparan borang */
-        .a4-container {
-            width: 210mm;
-            min-height: 297mm;
-            background: white;
-            margin: auto;
-            padding: 15mm;
-            box-shadow: 0 0 10px rgba(0,0,0,0.1);
-        }
-        .form-border { border: 1px solid #000; }
-        .grid-border > div { border: 1px solid #000; padding: 4px 8px; }
-        @media print {
-            body { background: white; }
-            .no-print { display: none; }
-            .a4-container { box-shadow: none; margin: 0; padding: 0; width: 100%; }
-        }
-    </style>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="theme-color" content="#0b6b3a">
+<title>Isi Borang Pondok</title>
+<style>
+:root{--g:#0b6b3a;--g2:#0a5430;--n:#0b2559;--bg:#f3f5f4;--card:#fff;--line:#d9dedb;--txt:#17201b;--mut:#5f6b64;--bad:#c0392b;--warn:#b7791f}
+*{box-sizing:border-box}
+html{-webkit-text-size-adjust:100%}
+body{margin:0;background:var(--bg);color:var(--txt);font:15px/1.45 system-ui,-apple-system,"Segoe UI",Roboto,Arial,sans-serif;padding-bottom:96px}
+header{background:var(--n);color:#fff;padding:14px 16px}
+header h1{margin:0;font-size:17px;font-weight:700}
+header p{margin:2px 0 0;font-size:12.5px;opacity:.8}
+.wrap{max-width:1100px;margin:0 auto;padding:12px;display:grid;gap:12px}
+@media(min-width:900px){.wrap{grid-template-columns:minmax(0,1fr) 440px;align-items:start}.pv{position:sticky;top:12px}}
+.card{background:var(--card);border:1px solid var(--line);border-radius:12px;padding:14px;margin-bottom:12px}
+.card h2{margin:0 0 10px;font-size:14px;letter-spacing:.02em;text-transform:uppercase;color:var(--g2);display:flex;align-items:center;gap:8px}
+.card h2 b{background:var(--g);color:#fff;border-radius:50%;width:22px;height:22px;display:inline-grid;place-items:center;font-size:12px}
+label{display:block;font-size:13px;font-weight:600;margin:10px 0 4px}
+label small{font-weight:400;color:var(--mut)}
+input[type=text],input[type=email],input[type=tel],input[type=date],select,textarea{width:100%;padding:10px 11px;font:inherit;border:1px solid #b9c2bd;border-radius:8px;background:#fff;color:var(--txt)}
+input:focus,select:focus,textarea:focus{outline:2px solid #7fc5a0;border-color:var(--g)}
+textarea{resize:vertical;min-height:72px}
+.up{text-transform:uppercase}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.bad{border-color:var(--bad)!important;background:#fff6f5}
+.msg{color:var(--bad);font-size:12.5px;margin-top:3px;min-height:0}
+.chk{display:flex;gap:8px;align-items:flex-start;font-weight:400;font-size:13.5px;margin:10px 0 0}
+.chk input{margin-top:3px}
+.up-box{border:1px dashed #9fb0a6;border-radius:10px;padding:10px;margin-top:6px;background:#fafcfb}
+.up-box .top{display:flex;gap:10px;align-items:center}
+.thumb{width:92px;height:56px;border:1px solid var(--line);border-radius:6px;background:
+ conic-gradient(#eee 25%,#fff 0 50%,#eee 0 75%,#fff 0) 0 0/12px 12px;flex:none}
+.up-box input[type=file]{font-size:13px;max-width:100%}
+.opts{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;margin-top:8px;font-size:13px}
+.opts input[type=range]{width:130px}
+.lnk{background:none;border:0;color:var(--bad);font:inherit;font-size:13px;cursor:pointer;padding:0;text-decoration:underline}
+.pv canvas{width:100%;height:auto;display:block;border:1px solid var(--line);border-radius:8px;background:#fff;box-shadow:0 2px 10px #0001}
+.checks{margin:10px 0 0;padding:0;list-style:none;font-size:13.5px}
+.checks li{padding:3px 0;display:flex;gap:8px}
+.ok{color:var(--g)}.no{color:var(--warn)}
+.btn{font:inherit;font-weight:700;border:0;border-radius:10px;padding:12px 14px;cursor:pointer}
+.btn.pri{background:var(--g);color:#fff}
+.btn.sec{background:#e6ece8;color:var(--txt)}
+.btn.ghost{background:#fff;border:1px solid #b9c2bd;color:var(--txt);font-weight:600}
+.btn:active{transform:translateY(1px)}
+.bar{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);padding:10px 12px;display:flex;gap:8px;justify-content:center;flex-wrap:wrap;z-index:5}
+.seg{display:inline-flex;border:1px solid #b9c2bd;border-radius:10px;overflow:hidden}
+.seg label{margin:0;padding:11px 14px;cursor:pointer;font-weight:700;font-size:14px;background:#fff}
+.seg input{display:none}
+.seg input:checked+span{color:#fff}
+.seg label:has(input:checked){background:var(--n);color:#fff}
+#toast{position:fixed;left:50%;bottom:92px;transform:translateX(-50%);background:#17201b;color:#fff;padding:10px 14px;border-radius:10px;font-size:13.5px;max-width:92vw;display:none;z-index:9;text-align:center}
+.hint{font-size:12.5px;color:var(--mut);margin:6px 0 0}
+</style>
 </head>
-<body class="bg-gray-100 p-4">
+<body>
+<header>
+  <h1>Isi Borang Pengesahan Status Pengajian Pondok</h1>
+  <p>PONDOK/PLJ/02 · LZNK — semua data kekal dalam peranti anda (tiada dihantar ke pelayan)</p>
+</header>
 
-    <!-- Panel Kawalan / Input Form (Tidak dipaparkan sewaktu cetak/download) -->
-    <div class="no-print max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md mb-8">
-        <h2 class="text-2xl font-bold mb-4 text-blue-800">Sistem Penjana Borang LZNK (PONDOK/PLJ/02)</h2>
-        
-        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
-            <!-- Maklumat Sekolah (Disimpan dalam localStorage) -->
-            <div class="bg-gray-50 p-4 rounded border">
-                <h3 class="font-bold text-lg mb-3">Maklumat Pusat Pengajian (Kekal)</h3>
-                <label class="block text-sm mb-1">Nama Pusat Pengajian</label>
-                <input type="text" id="in-sekolah" class="w-full border p-2 mb-3 rounded" oninput="updateView(); saveLocal()">
-                
-                <label class="block text-sm mb-1">No Pendaftaran (JHEAIK/JAKIM)</label>
-                <input type="text" id="in-daftar" class="w-full border p-2 mb-3 rounded" oninput="updateView(); saveLocal()">
-                
-                <label class="block text-sm mb-1">Nama Mudir / Pengetua</label>
-                <input type="text" id="in-mudir" class="w-full border p-2 mb-3 rounded" oninput="updateView(); saveLocal()">
-                
-                <label class="block text-sm mb-1">Alamat Pondok / Madrasah</label>
-                <textarea id="in-alamat-sekolah" class="w-full border p-2 mb-3 rounded" oninput="updateView(); saveLocal()"></textarea>
+<div class="wrap">
+<div class="form">
 
-                <label class="block text-sm mb-1">Jawatan Pengesah</label>
-                <input type="text" id="in-jawatan" class="w-full border p-2 mb-3 rounded" oninput="updateView(); saveLocal()">
-            </div>
+  <section class="card">
+    <h2><b>1</b> Maklumat Pelajar</h2>
+    <label for="nama">Nama Pelajar <small>(seperti dalam Kad Pengenalan)</small></label>
+    <input id="nama" class="up" type="text" autocomplete="name">
+    <div class="msg" data-m="nama"></div>
 
-            <!-- Maklumat Pelajar (Custom setiap kali) -->
-            <div class="bg-blue-50 p-4 rounded border">
-                <h3 class="font-bold text-lg mb-3">Maklumat Pelajar</h3>
-                <label class="block text-sm mb-1">Nama Pelajar</label>
-                <input type="text" id="in-nama-pelajar" class="w-full border p-2 mb-3 rounded" oninput="updateView()">
-                
-                <label class="block text-sm mb-1">No. K/P</label>
-                <input type="text" id="in-kp-pelajar" class="w-full border p-2 mb-3 rounded" maxlength="12" oninput="updateView()">
-                
-                <label class="block text-sm mb-1">Muat Naik Cop & Tandatangan (Latar Belakang Lutsinar Digalakkan)</label>
-                <input type="file" id="upload-cop" accept="image/*" class="w-full text-sm mb-3" onchange="previewImage(event, 'img-cop')">
-            </div>
-        </div>
-
-        <div class="mt-6 flex gap-4">
-            <button onclick="downloadPDF()" class="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700">Muat Turun PDF</button>
-            <button onclick="downloadPNG()" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">Muat Turun PNG</button>
-            <button onclick="window.print()" class="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700">Cetak A4</button>
-        </div>
+    <div class="row">
+      <div>
+        <label for="ic">No. Kad Pengenalan</label>
+        <input id="ic" type="tel" inputmode="numeric" placeholder="000000-00-0000" maxlength="14">
+        <div class="msg" data-m="ic"></div>
+      </div>
+      <div>
+        <label for="tel">No. Tel Bimbit</label>
+        <input id="tel" type="tel" inputmode="tel" placeholder="012-3456789" maxlength="14">
+        <div class="msg" data-m="tel"></div>
+      </div>
     </div>
 
-    <!-- Templat Borang Sebenar A4 -->
-    <div id="borang-lznk" class="a4-container relative text-sm text-black font-sans bg-white border border-gray-300">
-        
-        <!-- Header -->
-        <div class="text-right text-xs mb-2">PONDOK/PLJ/02</div>
-        <div class="flex items-center border-b-2 border-black pb-2 mb-2">
-            <!-- Tempat Letak Logo (Boleh diganti dengan URL logo sebenar LZNK) -->
-            <div class="w-24 h-24 bg-green-100 flex items-center justify-center font-bold text-green-700 border border-green-500 mr-4">LOGO LZNK</div>
-            <div class="bg-blue-900 text-white flex-1 p-3 font-bold text-lg uppercase">
-                Borang Pengesahan Status Pengajian Pondok
-            </div>
-        </div>
+    <label for="email">Alamat E-mel</label>
+    <input id="email" type="email" inputmode="email" autocapitalize="off" autocomplete="email">
+    <div class="msg" data-m="email"></div>
 
-        <!-- Arahan -->
-        <ol class="list-decimal list-inside text-xs mb-4 italic">
-            <li>Pelajar dikehendaki mendapatkan pengesahan status pengajian (tandatangan & cop) daripada Pusat Pengajian.</li>
-            <li>Pihak yang membuat pengesahan adalah dalam kalangan pentadbir Pusat Pengajian yang memiliki autoriti sahaja.</li>
-            <li>Borang yang telah dilengkapkan hendaklah dimuat naik di dalam borang permohonan secara atas talian.</li>
-        </ol>
+    <label for="alamat">Alamat Surat Menyurat</label>
+    <textarea id="alamat" class="up" autocomplete="street-address"></textarea>
+    <div class="msg" data-m="alamat"></div>
 
-        <!-- Bahagian 1 -->
-        <div class="form-border mb-4">
-            <div class="bg-gray-200 font-bold p-1 border-b border-black">BAHAGIAN 1 - MAKLUMAT PELAJAR</div>
-            <div class="grid grid-cols-[150px_1fr] grid-border">
-                <div>Nama Pelajar</div>
-                <div class="uppercase" id="out-nama-pelajar"></div>
-                
-                <div>No. K.Pengenalan</div>
-                <div class="uppercase tracking-widest font-mono" id="out-kp-pelajar"></div>
-            </div>
-        </div>
+    <div class="row">
+      <div>
+        <label for="poskod">Poskod</label>
+        <input id="poskod" type="tel" inputmode="numeric" maxlength="5" autocomplete="postal-code">
+        <div class="msg" data-m="poskod"></div>
+      </div>
+      <div>
+        <label for="negeri">Negeri</label>
+        <select id="negeri"><option value="">— Pilih —</option></select>
+        <div class="msg" data-m="negeri"></div>
+      </div>
+    </div>
+  </section>
 
-        <!-- Bahagian 2 -->
-        <div class="form-border mb-4">
-            <div class="bg-gray-200 font-bold p-1 border-b border-black">BAHAGIAN 2 - MAKLUMAT PUSAT PENGAJIAN</div>
-            <div class="grid grid-cols-[200px_1fr] grid-border">
-                <div>Nama Pusat Pengajian</div>
-                <div class="uppercase font-bold" id="out-sekolah"></div>
-                
-                <div>No Pendaftaran Pondok (JHEAIK / JAKIM)</div>
-                <div class="uppercase" id="out-daftar"></div>
-                
-                <div>Nama Mudir / Pengetua</div>
-                <div class="uppercase" id="out-mudir"></div>
-                
-                <div>Alamat Pondok/ Madrasah/ Pusat Pengajian</div>
-                <div class="uppercase" id="out-alamat-sekolah"></div>
-            </div>
-        </div>
+  <section class="card">
+    <h2><b>2</b> Maklumat Pusat Pengajian</h2>
+    <label for="pusat">Nama Pusat Pengajian</label>
+    <input id="pusat" class="up" type="text">
+    <div class="msg" data-m="pusat"></div>
 
-        <!-- Bahagian 4 (Pengesahan) -->
-        <div class="form-border mb-4">
-            <div class="bg-gray-200 font-bold p-1 border-b border-black">BAHAGIAN 4 - PENGESAHAN PUSAT PENGAJIAN</div>
-            <div class="p-4 text-justify relative">
-                Dengan Nama Allah, Bahawasanya saya <span class="border-b border-dotted border-black inline-block w-64 text-center font-bold uppercase" id="out-mudir-sahkan"></span> 
-                mengesahkan penama pada borang ini adalah pelajar sepenuh masa di <span class="border-b border-dotted border-black inline-block w-64 text-center font-bold uppercase" id="out-sekolah-sahkan"></span>.
-                Saya juga bertanggungjawab di atas pengesahan pelajar ini.
-                <br><br>
-                Saya yang menjalankan amanah,
-                <br><br><br><br>
-                
-                <!-- Posisi imej cop & tandatangan -->
-                <div class="absolute right-10 bottom-10 opacity-90 mix-blend-multiply">
-                    <img id="img-cop" class="max-h-32 hidden">
-                </div>
+    <label for="noDaftar">No Pendaftaran Pondok (JHEAIK / JAKIM) <small>— pondok dalam negara sahaja, boleh dikosongkan</small></label>
+    <input id="noDaftar" class="up" type="text">
 
-                <div class="flex justify-between items-end mt-12">
-                    <div>
-                        ---------------------------------------------<br>
-                        (Tandatangan)<br>
-                        <table class="mt-2 text-sm">
-                            <tr><td class="w-16">Nama</td><td>: <span class="uppercase font-bold" id="out-mudir-bawah"></span></td></tr>
-                            <tr><td>Jawatan</td><td>: <span class="uppercase" id="out-jawatan"></span></td></tr>
-                        </table>
-                    </div>
-                    <div class="text-center">
-                        ---------------------------------------------<br>
-                        (Cop Pondok/Madrasah)
-                    </div>
-                </div>
-            </div>
-        </div>
-        
-        <div class="text-center font-bold text-xs mt-2 italic">
-            BORANG INI PERLU DIMUAT NAIK DALAM SISTEM PERMOHONAN SETELAH LENGKAP DIISI
-        </div>
+    <label for="mudir">Nama Mudir / Pengetua</label>
+    <input id="mudir" class="up" type="text">
+    <div class="msg" data-m="mudir"></div>
+
+    <label for="alamatPondok">Alamat Pondok / Madrasah / Pusat Pengajian</label>
+    <textarea id="alamatPondok" class="up"></textarea>
+    <div class="msg" data-m="alamatPondok"></div>
+
+    <label class="chk"><input type="checkbox" id="remember" checked>
+      <span>Ingat maklumat pusat pengajian, penandatangan, tandatangan &amp; cop pada peranti ini (supaya tidak perlu isi semula untuk pelajar seterusnya)</span></label>
+  </section>
+
+  <section class="card">
+    <h2><b>3</b> Pengakuan Pelajar</h2>
+    <p class="hint" style="margin-top:0">Nama pada pengakuan diambil automatik daripada Bahagian 1.</p>
+    <label for="tarikh">Tarikh</label>
+    <input id="tarikh" type="date">
+    <div class="msg" data-m="tarikh"></div>
+    <label>Tandatangan Pelajar <small>(foto / PNG)</small></label>
+    <div id="up-sigPelajar"></div>
+  </section>
+
+  <section class="card">
+    <h2><b>4</b> Pengesahan Pusat Pengajian</h2>
+    <p class="hint" style="margin-top:0">Nama Pondok pada pengesahan diambil automatik daripada Bahagian 2.</p>
+    <label class="chk" style="margin-top:0"><input type="checkbox" id="samaMudir" checked>
+      <span>Penandatangan ialah Mudir / Pengetua (guna nama di Bahagian 2)</span></label>
+
+    <label for="namaPent">Nama Penandatangan <small>(seperti dalam Kad Pengenalan)</small></label>
+    <input id="namaPent" class="up" type="text">
+    <div class="msg" data-m="namaPent"></div>
+
+    <div class="row">
+      <div>
+        <label for="icPent">No K/P Penandatangan</label>
+        <input id="icPent" type="tel" inputmode="numeric" placeholder="000000-00-0000" maxlength="14">
+        <div class="msg" data-m="icPent"></div>
+      </div>
+      <div>
+        <label for="jawatan">Jawatan</label>
+        <input id="jawatan" class="up" type="text" placeholder="MUDIR">
+        <div class="msg" data-m="jawatan"></div>
+      </div>
     </div>
 
-    <script>
-        // Init data dari localStorage
-        window.onload = function() {
-            document.getElementById('in-sekolah').value = localStorage.getItem('lznk_sekolah') || 'Madrasah Misbahul Falah';
-            document.getElementById('in-daftar').value = localStorage.getItem('lznk_daftar') || '';
-            document.getElementById('in-mudir').value = localStorage.getItem('lznk_mudir') || '';
-            document.getElementById('in-alamat-sekolah').value = localStorage.getItem('lznk_alamat') || 'Baling, Kedah';
-            document.getElementById('in-jawatan').value = localStorage.getItem('lznk_jawatan') || 'Mudir';
-            updateView();
-        }
+    <label>Tandatangan Penandatangan <small>(foto / PNG)</small></label>
+    <div id="up-sigPent"></div>
+    <label>Cop Pondok / Madrasah <small>(foto / PNG)</small></label>
+    <div id="up-cop"></div>
+  </section>
 
-        // Kemaskini paparan live
-        function updateView() {
-            const getVal = (id) => document.getElementById(id).value;
-            
-            document.getElementById('out-sekolah').innerText = getVal('in-sekolah');
-            document.getElementById('out-sekolah-sahkan').innerText = getVal('in-sekolah');
-            document.getElementById('out-daftar').innerText = getVal('in-daftar');
-            document.getElementById('out-mudir').innerText = getVal('in-mudir');
+  <button class="btn ghost" id="baru" type="button" style="width:100%">Pelajar baharu (kosongkan Bahagian 1 &amp; 3)</button>
+</div>
+
+<aside class="pv">
+  <div class="card">
+    <h2>Pratonton borang</h2>
+    <canvas id="cv"></canvas>
+    <ul class="checks" id="checks"></ul>
+  </div>
+</aside>
+</div>
+
+<div class="bar">
+  <div class="seg" role="radiogroup" aria-label="Format fail">
+    <label><input type="radio" name="fmt" value="pdf" checked><span>PDF</span></label>
+    <label><input type="radio" name="fmt" value="png"><span>PNG</span></label>
+  </div>
+  <button class="btn pri" id="share" type="button">Kongsi ke WhatsApp</button>
+  <button class="btn sec" id="dl" type="button">Muat turun</button>
+</div>
+<div id="toast"></div>
+
+<script src="template.js"></script>
+<script>
+(()=>{
+'use strict';
+const $=id=>document.getElementById(id);
+const S=200/72;                       // piksel per pt (templat dirasterkan 200 dpi)
+const FONT='Arial,"Liberation Sans",Helvetica,sans-serif';
+const INK='#0b0b0b';
+
+/* ---------- Koordinat medan (unit pt, A4, asal kiri-atas) ---------- */
+const IC_CELLS=[159.6,180.3,200.9,221.4,241.9,262.4,284.7,305.4,326.1,347.2,368.1,388.7,409.6];
+const POS_CELLS=IC_CELLS.slice(0,6);
+const P={
+  nama:{x:163,y:175.6,w:405},
+  ic:{y:198.1},
+  tel:{x:498,y:198.1,w:70},
+  email:{x:163,y:220.8,w:405},
+  alamat:{x:163,top:228.7,h:42.5,w:405},
+  poskod:{y:284.6},
+  negeri:{x:321,y:284.6,w:246},
+  pusat:{x:163,y:325.2,w:405},
+  noDaftar:{x:163,y:352.6,w:405},
+  mudir:{x:163,y:381.6,w:405},
+  alamatPondok:{x:163,top:390.0,h:33.3,w:405},
+  s3Nama:{x:58,y:455.8,w:308},
+  tarikh:{cx:486.2,y:538.0,w:118},
+  s4Nama:{x:233,y:592.4,w:185},
+  s4Pondok:{x:28,y:627.0,w:187},
+  namaPent:{x:106,y:748.5,w:300},
+  icPent:{x:106,y:762.8,w:300},
+  jawatan:{x:106,y:777.2,w:305},
+  sigPelajar:{x:28,y:498,w:148,h:41,anchor:'bottom'},
+  sigPent:{x:28,y:668,w:142,h:51,anchor:'bottom'},
+  cop:{x:400,y:662,w:160,h:104,anchor:'center'}
+};
+const NEGERI=['Johor','Kedah','Kelantan','Melaka','Negeri Sembilan','Pahang','Perak','Perlis','Pulau Pinang','Sabah','Sarawak','Selangor','Terengganu','W.P. Kuala Lumpur','W.P. Labuan','W.P. Putrajaya'];
+NEGERI.forEach(n=>{const o=document.createElement('option');o.value=n;o.textContent=n;$('negeri').appendChild(o)});
+
+/* ---------- Kanvas ---------- */
+const cv=$('cv'),ctx=cv.getContext('2d');
+const tpl=new Image();let tplReady=false;
+tpl.onload=()=>{cv.width=tpl.naturalWidth;cv.height=tpl.naturalHeight;tplReady=true;render()};
+tpl.src=window.TEMPLATE_DATA;
+
+/* ---------- Imej tandatangan / cop ---------- */
+const IMG={sigPelajar:null,sigPent:null,cop:null};   // {raw,removeBg,scale,proc,dataURL}
+const IMGKEYS=[['sigPelajar','Pilih tandatangan pelajar'],['sigPent','Pilih tandatangan penandatangan'],['cop','Pilih cop pondok']];
+const PERSIST={sigPent:true,cop:true};                // sigPelajar tidak disimpan (data pelajar)
+
+function process(rec){
+  const r=rec.raw;let w=r.naturalWidth,h=r.naturalHeight;
+  const c=document.createElement('canvas');c.width=w;c.height=h;
+  const x=c.getContext('2d',{willReadFrequently:true});x.drawImage(r,0,0);
+  if(!rec.removeBg){rec.proc=c;return}
+  const d=x.getImageData(0,0,w,h),p=d.data;
+  let minX=w,minY=h,maxX=-1,maxY=-1;
+  for(let i=0,k=0;i<p.length;i+=4,k++){
+    const lum=.299*p[i]+.587*p[i+1]+.114*p[i+2];
+    let a=lum>=235?0:lum<=185?255:255*(235-lum)/50;
+    a=Math.min(a,p[i+3]);p[i+3]=a;
+    if(a>30){const px=k%w,py=(k/w)|0;if(px<minX)minX=px;if(px>maxX)maxX=px;if(py<minY)minY=py;if(py>maxY)maxY=py}
+  }
+  x.putImageData(d,0,0);
+  if(maxX<0){rec.proc=c;return}
+  const pad=4;minX=Math.max(0,minX-pad);minY=Math.max(0,minY-pad);maxX=Math.min(w-1,maxX+pad);maxY=Math.min(h-1,maxY+pad);
+  const o=document.createElement('canvas');o.width=maxX-minX+1;o.height=maxY-minY+1;
+  o.getContext('2d').drawImage(c,minX,minY,o.width,o.height,0,0,o.width,o.height);
+  rec.proc=o;
+}
+function fileToRec(file){
+  return new Promise((res,rej)=>{
+    const fr=new FileReader();
+    fr.onerror=rej;
+    fr.onload=()=>{
+      const im=new Image();
+      im.onerror=()=>rej(new Error('Fail imej tidak sah'));
+      im.onload=()=>{
+        // kecilkan imej besar (foto telefon) supaya ringan
+        const M=1000,k=Math.min(1,M/Math.max(im.naturalWidth,im.naturalHeight));
+        const c=document.createElement('canvas');c.width=Math.round(im.naturalWidth*k);c.height=Math.round(im.naturalHeight*k);
+        c.getContext('2d').drawImage(im,0,0,c.width,c.height);
+        const type=file.type==='image/png'?'image/png':'image/jpeg';
+        const url=c.toDataURL(type,.9);
+        const raw=new Image();raw.onload=()=>res({raw,dataURL:url});raw.src=url;
+      };
+      im.src=fr.result;
+    };
+    fr.readAsDataURL(file);
+  });
+}
+function mkUploader(key,placeholder){
+  const box=document.createElement('div');box.className='up-box';
+  box.innerHTML=`<div class="top"><canvas class="thumb" width="184" height="112"></canvas>
+    <input type="file" accept="image/*"></div>
+    <div class="opts">
+      <label class="chk" style="margin:0"><input type="checkbox" class="rb" checked><span>Buang latar putih</span></label>
+      <label class="chk" style="margin:0">Saiz <input type="range" class="sc" min="50" max="130" value="100"></label>
+      <button type="button" class="lnk rm">Buang imej</button>
+    </div>`;
+  $('up-'+key).appendChild(box);
+  const f=box.querySelector('input[type=file]'),rb=box.querySelector('.rb'),sc=box.querySelector('.sc'),rm=box.querySelector('.rm'),th=box.querySelector('.thumb');
+  const paintThumb=()=>{
+    const t=th.getContext('2d');t.clearRect(0,0,th.width,th.height);
+    const rec=IMG[key];if(!rec||!rec.proc)return;
+    const k=Math.min(th.width/rec.proc.width,th.height/rec.proc.height);
+    const w=rec.proc.width*k,h=rec.proc.height*k;t.drawImage(rec.proc,(th.width-w)/2,(th.height-h)/2,w,h);
+  };
+  const apply=async(rec)=>{IMG[key]=rec;rec.removeBg=rb.checked;rec.scale=sc.value/100;process(rec);paintThumb();persist();render()};
+  f.addEventListener('change',async()=>{
+    if(!f.files[0])return;
+    try{const rec=await fileToRec(f.files[0]);await apply(rec)}catch(e){toast(e.message||'Gagal membaca imej')}
+  });
+  rb.addEventListener('change',()=>{const r=IMG[key];if(!r)return;r.removeBg=rb.checked;process(r);paintThumb();persist();render()});
+  sc.addEventListener('input',()=>{const r=IMG[key];if(!r)return;r.scale=sc.value/100;persist();render()});
+  rm.addEventListener('click',()=>{IMG[key]=null;f.value='';paintThumb();persist();render()});
+  box._restore=(rec)=>{rb.checked=rec.removeBg;sc.value=Math.round(rec.scale*100);IMG[key]=rec;process(rec);paintThumb()};
+  box._clear=()=>{IMG[key]=null;f.value='';paintThumb()};
+  return box;
+}
+const UPBOX={};
+IMGKEYS.forEach(([k,p])=>UPBOX[k]=mkUploader(k,p));
+
+/* ---------- Nilai & pengesahan ---------- */
+function todayISO(){const d=new Date(),p=n=>String(n).padStart(2,'0');return `${d.getFullYear()}-${p(d.getMonth()+1)}-${p(d.getDate())}`}
+const digits=s=>(s||'').replace(/\D/g,'');
+const fmtIC=d=>d.length>8?`${d.slice(0,6)}-${d.slice(6,8)}-${d.slice(8)}`:d.length>6?`${d.slice(0,6)}-${d.slice(6)}`:d;
+function ddmmyyyy(iso){const m=/^(\d{4})-(\d{2})-(\d{2})$/.exec(iso||'');return m?`${m[3]}/${m[2]}/${m[1]}`:''}
+const up=s=>(s||'').trim().toUpperCase();
+function vals(){
+  const mudir=up($('mudir').value);
+  const same=$('samaMudir').checked;
+  return{
+    nama:up($('nama').value),icD:digits($('ic').value),tel:$('tel').value.trim(),email:$('email').value.trim(),
+    alamat:up($('alamat').value),poskod:digits($('poskod').value),negeri:up($('negeri').value),
+    pusat:up($('pusat').value),noDaftar:up($('noDaftar').value),mudir,alamatPondok:up($('alamatPondok').value),
+    tarikh:ddmmyyyy($('tarikh').value),
+    namaPent:same?mudir:up($('namaPent').value),icPentD:digits($('icPent').value),jawatan:up($('jawatan').value)
+  };
+}
+function validate(){
+  const v=vals(),e=[];const add=(id,m)=>e.push({id,m});
+  if(!v.nama)add('nama','Nama pelajar diperlukan.');
+  if(v.icD.length!==12)add('ic','No. K/P mesti 12 digit.');
+  const t=digits(v.tel);
+  if(!/^(60|0)1\d{8,9}$/.test(t))add('tel','Nombor telefon bimbit tidak sah (cth: 012-3456789).');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v.email))add('email','Alamat e-mel tidak sah.');
+  if(!v.alamat)add('alamat','Alamat diperlukan.');
+  if(v.poskod.length!==5)add('poskod','Poskod mesti 5 digit.');
+  if(!v.negeri)add('negeri','Pilih negeri.');
+  if(!v.pusat)add('pusat','Nama pusat pengajian diperlukan.');
+  if(!v.mudir)add('mudir','Nama Mudir / Pengetua diperlukan.');
+  if(!v.alamatPondok)add('alamatPondok','Alamat pusat pengajian diperlukan.');
+  if(!v.tarikh)add('tarikh','Tarikh diperlukan.');
+  if(!v.namaPent)add('namaPent','Nama penandatangan diperlukan.');
+  if(v.icPentD.length!==12)add('icPent','No K/P mesti 12 digit.');
+  if(!v.jawatan)add('jawatan','Jawatan diperlukan.');
+  return e;
+}
+let showErr=false;
+function paintErrors(){
+  document.querySelectorAll('.msg').forEach(m=>m.textContent='');
+  document.querySelectorAll('.bad').forEach(x=>x.classList.remove('bad'));
+  if(!showErr)return;
+  validate().forEach(({id,m})=>{
+    const el=$(id);if(el)el.classList.add('bad');
+    const box=document.querySelector(`[data-m="${id}"]`);if(box)box.textContent=m;
+  });
+}
+
+/* ---------- Lukisan ---------- */
+function fitFont(text,maxW,size,min,weight=''){
+  let s=size;ctx.font=`${weight} ${s}px ${FONT}`;
+  while(ctx.measureText(text).width>maxW&&s>min){s-=.25;ctx.font=`${weight} ${s}px ${FONT}`}
+  return s;
+}
+function txt(t,x,y,maxW,size=10,min=6.5,align='left'){
+  if(!t)return false;
+  const s=fitFont(t,maxW,size,min);ctx.textAlign=align;ctx.fillText(t,x,y);
+  return ctx.measureText(t).width<=maxW+.5;
+}
+function wrapPara(text,maxW){
+  const out=[];
+  text.split(/\r?\n/).forEach(p=>{
+    const words=p.split(/\s+/).filter(Boolean);if(!words.length){out.push('');return}
+    let line='';
+    words.forEach(w=>{const tt=line?line+' '+w:w;if(ctx.measureText(tt).width<=maxW||!line)line=tt;else{out.push(line);line=w}});
+    out.push(line);
+  });
+  return out;
+}
+function block(text,box){
+  if(!text)return true;
+  for(const c of [{s:9.5,lh:11,n:3},{s:8.5,lh:9.8,n:4},{s:7.5,lh:8.6,n:4}]){
+    ctx.font=`${c.s}px ${FONT}`;
+    const lines=wrapPara(text,box.w);
+    if(lines.length<=c.n&&lines.length*c.lh<=box.h+1){
+      const y0=box.top+(box.h-(lines.length-1)*c.lh)/2+c.s*.35;
+      ctx.textAlign='left';lines.forEach((l,i)=>ctx.fillText(l,box.x,y0+i*c.lh));
+      return true;
+    }
+  }
+  return false;
+}
+function drawImg(rec,b){
+  if(!rec||!rec.proc)return;
+  const k=Math.min(b.w/rec.proc.width,b.h/rec.proc.height)*rec.scale;
+  const w=rec.proc.width*k,h=rec.proc.height*k;
+  const x=b.x+(b.w-w)/2,y=b.anchor==='bottom'?b.y+b.h-h:b.y+(b.h-h)/2;
+  ctx.drawImage(rec.proc,x,y,w,h);
+}
+let overflow=[];
+function render(){
+  if(!tplReady)return;
+  ctx.setTransform(1,0,0,1,0,0);
+  ctx.drawImage(tpl,0,0,cv.width,cv.height);
+  ctx.setTransform(S,0,0,S,0,0);
+  ctx.fillStyle=INK;ctx.textBaseline='alphabetic';
+  const v=vals();overflow=[];
+  const chk=(ok,label)=>{if(!ok)overflow.push(label)};
+
+  chk(txt(v.nama,P.nama.x,P.nama.y,P.nama.w,10.5),'Nama pelajar');
+  // No K/P dalam 12 petak
+  ctx.font=`11px ${FONT}`;ctx.textAlign='center';
+  v.icD.slice(0,12).split('').forEach((d,i)=>ctx.fillText(d,(IC_CELLS[i]+IC_CELLS[i+1])/2,P.ic.y));
+  chk(txt(v.tel,P.tel.x,P.tel.y,P.tel.w,10),'No. telefon');
+  chk(txt(v.email.toLowerCase(),P.email.x,P.email.y,P.email.w,10),'E-mel');
+  chk(block(v.alamat,P.alamat),'Alamat surat menyurat');
+  ctx.font=`11px ${FONT}`;ctx.textAlign='center';
+  v.poskod.split('').forEach((d,i)=>ctx.fillText(d,(POS_CELLS[i]+POS_CELLS[i+1])/2,P.poskod.y));
+  chk(txt(v.negeri,P.negeri.x,P.negeri.y,P.negeri.w,10),'Negeri');
+
+  chk(txt(v.pusat,P.pusat.x,P.pusat.y,P.pusat.w,10.5),'Nama pusat pengajian');
+  chk(txt(v.noDaftar,P.noDaftar.x,P.noDaftar.y,P.noDaftar.w,10.5),'No pendaftaran');
+  chk(txt(v.mudir,P.mudir.x,P.mudir.y,P.mudir.w,10.5),'Nama Mudir');
+  chk(block(v.alamatPondok,P.alamatPondok),'Alamat pusat pengajian');
+
+  chk(txt(v.nama,P.s3Nama.x,P.s3Nama.y,P.s3Nama.w,10),'Nama (Bahagian 3)');
+  drawImg(IMG.sigPelajar,P.sigPelajar);
+  txt(v.tarikh,P.tarikh.cx,P.tarikh.y,P.tarikh.w,10.5,8,'center');
+
+  chk(txt(v.namaPent,P.s4Nama.x,P.s4Nama.y,P.s4Nama.w,10),'Nama penandatangan (Bahagian 4)');
+  chk(txt(v.pusat,P.s4Pondok.x,P.s4Pondok.y,P.s4Pondok.w,10),'Nama pondok (Bahagian 4)');
+  drawImg(IMG.sigPent,P.sigPent);
+  drawImg(IMG.cop,P.cop);
+  chk(txt(v.namaPent,P.namaPent.x,P.namaPent.y,P.namaPent.w,10.5),'Nama penandatangan');
+  txt(fmtIC(v.icPentD),P.icPent.x,P.icPent.y,P.icPent.w,10.5);
+  chk(txt(v.jawatan,P.jawatan.x,P.jawatan.y,P.jawatan.w,10.5),'Jawatan');
+  ctx.setTransform(1,0,0,1,0,0);
+  updateChecks();
+}
+function updateChecks(){
+  const errs=validate(),ids=new Set(errs.map(e=>e.id));
+  const grp=(ks)=>!ks.some(k=>ids.has(k));
+  const items=[
+    [grp(['nama','ic','tel','email','alamat','poskod','negeri']),'Bahagian 1 — maklumat pelajar'],
+    [grp(['pusat','mudir','alamatPondok']),'Bahagian 2 — pusat pengajian'],
+    [!!IMG.sigPelajar,'Tandatangan pelajar'],
+    [grp(['tarikh']),'Tarikh pengakuan'],
+    [grp(['namaPent','icPent','jawatan']),'Butiran penandatangan'],
+    [!!IMG.sigPent,'Tandatangan penandatangan'],
+    [!!IMG.cop,'Cop pondok / madrasah']
+  ];
+  let h=items.map(([ok,l])=>`<li class="${ok?'ok':'no'}"><span>${ok?'✓':'○'}</span><span>${l}</span></li>`).join('');
+  if(overflow.length)h+=`<li class="no"><span>⚠</span><span>Teks terlalu panjang, dikecilkan/dipotong: ${overflow.join(', ')}</span></li>`;
+  $('checks').innerHTML=h;
+}
+
+/* ---------- Simpan profil pusat pengajian (localStorage) ---------- */
+const PROFILE_KEY='pondokProfile.v1';
+const PFIELDS=['pusat','noDaftar','mudir','alamatPondok','namaPent','icPent','jawatan'];
+function persist(){
+  try{
+    if(!$('remember').checked){localStorage.removeItem(PROFILE_KEY);return}
+    const o={f:{},same:$('samaMudir').checked,img:{}};
+    PFIELDS.forEach(k=>o.f[k]=$(k).value);
+    Object.keys(PERSIST).forEach(k=>{const r=IMG[k];if(r)o.img[k]={url:r.dataURL,removeBg:r.removeBg,scale:r.scale}});
+    localStorage.setItem(PROFILE_KEY,JSON.stringify(o));
+  }catch(e){/* storan penuh / disekat — abaikan */}
+}
+function restore(){
+  try{
+    const o=JSON.parse(localStorage.getItem(PROFILE_KEY)||'null');if(!o)return;
+    PFIELDS.forEach(k=>{if(o.f&&o.f[k]!=null)$(k).value=o.f[k]});
+    $('samaMudir').checked=o.same!==false;
+    Object.entries(o.img||{}).forEach(([k,r])=>{
+      const raw=new Image();raw.onload=()=>{UPBOX[k]._restore({raw,dataURL:r.url,removeBg:r.removeBg,scale:r.scale});render()};raw.src=r.url;
+    });
+  }catch(e){}
+}
+function syncSame(){
+  const same=$('samaMudir').checked;
+  $('namaPent').disabled=same;
+  if(same)$('namaPent').value=$('mudir').value;
+}
+
+/* ---------- Eksport ---------- */
+const blobOf=(type,q)=>new Promise(r=>cv.toBlob(r,type,q));
+async function buildPdf(){
+  const jpg=new Uint8Array(await (await blobOf('image/jpeg',.95)).arrayBuffer());
+  const enc=new TextEncoder(),parts=[],offs=[];let len=0;
+  const push=b=>{if(typeof b==='string')b=enc.encode(b);parts.push(b);len+=b.length};
+  push(new Uint8Array([0x25,0x50,0x44,0x46,0x2D,0x31,0x2E,0x34,0x0A,0x25,0xE2,0xE3,0xCF,0xD3,0x0A]));
+  offs[1]=len;push('1 0 obj\n<< /Type /Catalog /Pages 2 0 R >>\nendobj\n');
+  offs[2]=len;push('2 0 obj\n<< /Type /Pages /Kids [3 0 R] /Count 1 >>\nendobj\n');
+  offs[3]=len;push('3 0 obj\n<< /Type /Page /Parent 2 0 R /MediaBox [0 0 595.28 841.89] /Resources << /XObject << /Im0 5 0 R >> >> /Contents 4 0 R >>\nendobj\n');
+  const content='q 595.28 0 0 841.89 0 0 cm /Im0 Do Q';
+  offs[4]=len;push(`4 0 obj\n<< /Length ${content.length} >>\nstream\n${content}\nendstream\nendobj\n`);
+  offs[5]=len;push(`5 0 obj\n<< /Type /XObject /Subtype /Image /Width ${cv.width} /Height ${cv.height} /ColorSpace /DeviceRGB /BitsPerComponent 8 /Filter /DCTDecode /Length ${jpg.length} >>\nstream\n`);
+  push(jpg);push('\nendstream\nendobj\n');
+  const x=len;let s='xref\n0 6\n0000000000 65535 f \n';
+  for(let i=1;i<=5;i++)s+=String(offs[i]).padStart(10,'0')+' 00000 n \n';
+  push(s);push(`trailer\n<< /Size 6 /Root 1 0 R >>\nstartxref\n${x}\n%%EOF\n`);
+  const out=new Uint8Array(len);let p=0;parts.forEach(b=>{out.set(b,p);p+=b.length});
+  return new Blob([out],{type:'application/pdf'});
+}
+function slug(s){return (s||'').normalize('NFKD').replace(/[^\w\s-]/g,'').trim().replace(/\s+/g,'_').slice(0,40)}
+async function makeFile(){
+  render();
+  const v=vals(),fmt=document.querySelector('input[name=fmt]:checked').value;
+  const base=`Borang_Pondok_${slug(v.nama)||'PELAJAR'}_${v.icD||'tanpaKP'}`;
+  if(fmt==='png')return new File([await blobOf('image/png')],base+'.png',{type:'image/png'});
+  return new File([await buildPdf()],base+'.pdf',{type:'application/pdf'});
+}
+function preflight(){
+  showErr=true;paintErrors();
+  const errs=validate();
+  if(errs.length){
+    const el=$(errs[0].id);if(el){el.scrollIntoView({behavior:'smooth',block:'center'});el.focus({preventScroll:true})}
+    toast('Sila lengkapkan maklumat bertanda merah ('+errs.length+').');return false;
+  }
+  const miss=[];
+  if(!IMG.sigPelajar)miss.push('tandatangan pelajar');
+  if(!IMG.sigPent)miss.push('tandatangan penandatangan');
+  if(!IMG.cop)miss.push('cop pondok');
+  if(miss.length&&!confirm('Belum ada: '+miss.join(', ')+'.\nBorang tanpa tandatangan/cop mungkin tidak diterima. Teruskan juga?'))return false;
+  if(overflow.length&&!confirm('Sebahagian teks terlalu panjang (' + overflow.join(', ') + ') dan telah dikecilkan/dipotong. Teruskan?'))return false;
+  return true;
+}
+function download(file){
+  const a=document.createElement('a');a.href=URL.createObjectURL(file);a.download=file.name;
+  document.body.appendChild(a);a.click();a.remove();setTimeout(()=>URL.revokeObjectURL(a.href),4000);
+}
+$('dl').addEventListener('click',async()=>{
+  if(!preflight())return;
+  try{download(await makeFile());toast('Fail dimuat turun.')}catch(e){toast('Gagal menjana fail: '+e.message)}
+});
+$('share').addEventListener('click',async()=>{
+  if(!preflight())return;
+  let file;try{file=await makeFile()}catch(e){toast('Gagal menjana fail: '+e.message);return}
+  if(navigator.canShare&&navigator.canShare({files:[file]})){
+    try{await navigator.share({files:[file],title:file.name,text:'Borang Pengesahan Status Pengajian Pondok'});return}
+    catch(e){if(e&&e.name==='AbortError')return}
+  }
+  download(file);
+  toast('Peranti ini tidak menyokong kongsi terus. Fail dimuat turun — buka WhatsApp dan lampirkan fail tersebut.');
+});
+let tt;function toast(m){const t=$('toast');t.textContent=m;t.style.display='block';clearTimeout(tt);tt=setTimeout(()=>t.style.display='none',4500)}
+
+/* ---------- Peristiwa ---------- */
+let raf=0;const later=()=>{cancelAnimationFrame(raf);raf=requestAnimationFrame(()=>{render();paintErrors()})};
+['ic','icPent'].forEach(id=>$(id).addEventListener('input',e=>{e.target.value=fmtIC(digits(e.target.value).slice(0,12))}));
+$('poskod').addEventListener('input',e=>{e.target.value=digits(e.target.value).slice(0,5)});
+$('tel').addEventListener('input',e=>{e.target.value=e.target.value.replace(/[^\d+\-\s]/g,'')});
+document.querySelectorAll('input,select,textarea').forEach(el=>{
+  if(el.type==='file'||el.type==='range'||el.type==='radio')return;
+  el.addEventListener('input',()=>{if(el.id==='mudir')syncSame();later();persist()});
+  el.addEventListener('change',()=>{later();persist()});
+});
+$('samaMudir').addEventListener('change',()=>{syncSame();later();persist()});
+$('remember').addEventListener('change',()=>{if($('remember').checked)persist();else try{localStorage.removeItem(PROFILE_KEY)}catch(e){}});
+$('baru').addEventListener('click',()=>{
+  ['nama','ic','tel','email','alamat','poskod','negeri'].forEach(k=>$(k).value='');
+  UPBOX.sigPelajar._clear();
+  $('tarikh').value=todayISO();
+  showErr=false;paintErrors();render();window.scrollTo({top:0,behavior:'smooth'});
+});
+
+/* ---------- Mula ---------- */
+$('tarikh').value=todayISO();
+restore();syncSame();render();
+})();
+</script>
+</body>
+</html>
+Text = getVal('in-mudir');
             document.getElementById('out-mudir-sahkan').innerText = getVal('in-mudir');
             document.getElementById('out-mudir-bawah').innerText = getVal('in-mudir');
             document.getElementById('out-alamat-sekolah').innerText = getVal('in-alamat-sekolah');
