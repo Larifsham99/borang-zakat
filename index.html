@@ -1,188 +1,249 @@
 <!DOCTYPE html>
 <html lang="ms">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Sistem Isian Borang LZNK (PONDOK/PLJ/02)</title>
-  <!-- Tailwind CSS -->
-  <script src="https://cdn.tailwindcss.com"></script>
-  <!-- PDF.js untuk baca PDF Asli 100% Tanpa Ubah Struktur -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js"></script>
-  <!-- jsPDF untuk jana PDF -->
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
-  <style>
-    body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; }
-    .canvas-container {
-      position: relative;
-      width: 100%;
-      max-width: 794px;
-      margin: 0 auto;
-      box-shadow: 0 10px 25px rgba(0,0,0,0.25);
-      background: white;
-    }
-    canvas {
-      width: 100%;
-      height: auto;
-      display: block;
-    }
-  </style>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Penjana Borang LZNK - Pondok/Madrasah</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+    <style>
+        /* Tetapan saiz A4 untuk paparan borang */
+        .a4-container {
+            width: 210mm;
+            min-height: 297mm;
+            background: white;
+            margin: auto;
+            padding: 15mm;
+            box-shadow: 0 0 10px rgba(0,0,0,0.1);
+        }
+        .form-border { border: 1px solid #000; }
+        .grid-border > div { border: 1px solid #000; padding: 4px 8px; }
+        @media print {
+            body { background: white; }
+            .no-print { display: none; }
+            .a4-container { box-shadow: none; margin: 0; padding: 0; width: 100%; }
+        }
+    </style>
 </head>
-<body class="bg-slate-100 min-h-screen pb-12">
+<body class="bg-gray-100 p-4">
 
-  <!-- Header -->
-  <header class="bg-emerald-900 text-white p-4 shadow-md sticky top-0 z-30">
-    <div class="max-w-7xl mx-auto flex flex-wrap justify-between items-center gap-3">
-      <div>
-        <h1 class="text-lg font-bold tracking-wide">SISTEM PENGESAHAN BORANG LZNK (PONDOK/PLJ/02)</h1>
-        <p class="text-xs text-emerald-200">100% Asli Mengikut Fail PDF Rasmi • Tanpa Ubah Format Asal</p>
-      </div>
-      <div class="flex gap-2">
-        <button onclick="exportFile('png')" class="bg-amber-500 hover:bg-amber-600 text-slate-900 font-bold px-4 py-2 rounded-lg text-sm shadow transition">
-          Muat Turun PNG
-        </button>
-        <button onclick="exportFile('pdf')" class="bg-emerald-500 hover:bg-emerald-400 text-slate-950 font-bold px-4 py-2 rounded-lg text-sm shadow transition">
-          Muat Turun PDF
-        </button>
-      </div>
+    <!-- Panel Kawalan / Input Form (Tidak dipaparkan sewaktu cetak/download) -->
+    <div class="no-print max-w-4xl mx-auto bg-white p-6 rounded-lg shadow-md mb-8">
+        <h2 class="text-2xl font-bold mb-4 text-blue-800">Sistem Penjana Borang LZNK (PONDOK/PLJ/02)</h2>
+        
+        <div class="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <!-- Maklumat Sekolah (Disimpan dalam localStorage) -->
+            <div class="bg-gray-50 p-4 rounded border">
+                <h3 class="font-bold text-lg mb-3">Maklumat Pusat Pengajian (Kekal)</h3>
+                <label class="block text-sm mb-1">Nama Pusat Pengajian</label>
+                <input type="text" id="in-sekolah" class="w-full border p-2 mb-3 rounded" oninput="updateView(); saveLocal()">
+                
+                <label class="block text-sm mb-1">No Pendaftaran (JHEAIK/JAKIM)</label>
+                <input type="text" id="in-daftar" class="w-full border p-2 mb-3 rounded" oninput="updateView(); saveLocal()">
+                
+                <label class="block text-sm mb-1">Nama Mudir / Pengetua</label>
+                <input type="text" id="in-mudir" class="w-full border p-2 mb-3 rounded" oninput="updateView(); saveLocal()">
+                
+                <label class="block text-sm mb-1">Alamat Pondok / Madrasah</label>
+                <textarea id="in-alamat-sekolah" class="w-full border p-2 mb-3 rounded" oninput="updateView(); saveLocal()"></textarea>
+
+                <label class="block text-sm mb-1">Jawatan Pengesah</label>
+                <input type="text" id="in-jawatan" class="w-full border p-2 mb-3 rounded" oninput="updateView(); saveLocal()">
+            </div>
+
+            <!-- Maklumat Pelajar (Custom setiap kali) -->
+            <div class="bg-blue-50 p-4 rounded border">
+                <h3 class="font-bold text-lg mb-3">Maklumat Pelajar</h3>
+                <label class="block text-sm mb-1">Nama Pelajar</label>
+                <input type="text" id="in-nama-pelajar" class="w-full border p-2 mb-3 rounded" oninput="updateView()">
+                
+                <label class="block text-sm mb-1">No. K/P</label>
+                <input type="text" id="in-kp-pelajar" class="w-full border p-2 mb-3 rounded" maxlength="12" oninput="updateView()">
+                
+                <label class="block text-sm mb-1">Muat Naik Cop & Tandatangan (Latar Belakang Lutsinar Digalakkan)</label>
+                <input type="file" id="upload-cop" accept="image/*" class="w-full text-sm mb-3" onchange="previewImage(event, 'img-cop')">
+            </div>
+        </div>
+
+        <div class="mt-6 flex gap-4">
+            <button onclick="downloadPDF()" class="bg-red-600 text-white px-4 py-2 rounded shadow hover:bg-red-700">Muat Turun PDF</button>
+            <button onclick="downloadPNG()" class="bg-blue-600 text-white px-4 py-2 rounded shadow hover:bg-blue-700">Muat Turun PNG</button>
+            <button onclick="window.print()" class="bg-gray-600 text-white px-4 py-2 rounded shadow hover:bg-gray-700">Cetak A4</button>
+        </div>
     </div>
-  </header>
 
-  <main class="max-w-7xl mx-auto mt-6 px-3 grid grid-cols-1 lg:grid-cols-12 gap-6">
-    
-    <!-- PANEL KAWALAN & BORANG (KIRI) -->
-    <div class="lg:col-span-5 bg-white rounded-xl shadow-md p-5 h-fit border border-slate-200">
-      
-      <!-- Status PDF Asli -->
-      <div class="mb-4 p-3 bg-emerald-50 border border-emerald-200 rounded-lg">
-        <label class="block text-xs font-bold text-emerald-900 uppercase mb-1">
-          Fail Asal PDF Borang LZNK (Auto-Load / Muat Naik Manual)
-        </label>
-        <input type="file" id="pdfUpload" accept="application/pdf" class="block w-full text-xs text-slate-600 file:mr-3 file:py-1.5 file:px-3 file:rounded file:border-0 file:text-xs file:font-semibold file:bg-emerald-700 file:text-white hover:file:bg-emerald-800 cursor-pointer">
-        <p id="pdfStatus" class="text-[11px] text-emerald-700 mt-1 font-medium">
-          *Jika anda letak fail `borang_asal.pdf` dalam folder GitHub yang sama, ia akan dimuatkan secara automatik.
-        </p>
-      </div>
-
-      <!-- Navigasi Tab -->
-      <div class="grid grid-cols-4 gap-1 bg-slate-100 p-1 rounded-lg mb-4 text-xs font-bold text-center">
-        <button onclick="switchTab('pelajar')" id="tabBtn-pelajar" class="py-2 rounded-md bg-emerald-800 text-white">1. Pelajar</button>
-        <button onclick="switchTab('pondok')" id="tabBtn-pondok" class="py-2 rounded-md text-slate-600 hover:bg-slate-200">2. Pondok</button>
-        <button onclick="switchTab('cop')" id="tabBtn-cop" class="py-2 rounded-md text-slate-600 hover:bg-slate-200">3. Cop/TT</button>
-        <button onclick="switchTab('laras')" id="tabBtn-laras" class="py-2 rounded-md text-slate-600 hover:bg-slate-200">4. Laras</button>
-      </div>
-
-      <!-- TAB 1: MAKLUMAT PELAJAR (CUSTOM SETIAP PELAJAR) -->
-      <div id="tab-pelajar" class="space-y-3">
-        <div class="flex justify-between items-center border-b pb-2">
-          <h2 class="font-bold text-sm text-slate-800">BAHAGIAN 1 & 3: Maklumat Pelajar</h2>
-          <button onclick="resetPelajar()" class="text-xs text-red-600 hover:underline font-semibold">Kosongkan Pelajar</button>
+    <!-- Templat Borang Sebenar A4 -->
+    <div id="borang-lznk" class="a4-container relative text-sm text-black font-sans bg-white border border-gray-300">
+        
+        <!-- Header -->
+        <div class="text-right text-xs mb-2">PONDOK/PLJ/02</div>
+        <div class="flex items-center border-b-2 border-black pb-2 mb-2">
+            <!-- Tempat Letak Logo (Boleh diganti dengan URL logo sebenar LZNK) -->
+            <div class="w-24 h-24 bg-green-100 flex items-center justify-center font-bold text-green-700 border border-green-500 mr-4">LOGO LZNK</div>
+            <div class="bg-blue-900 text-white flex-1 p-3 font-bold text-lg uppercase">
+                Borang Pengesahan Status Pengajian Pondok
+            </div>
         </div>
 
-        <div>
-          <label class="text-xs font-semibold text-slate-700">Nama Pelajar (Huruf Besar)</label>
-          <input type="text" id="namaPelajar" oninput="syncNamaPelajar()" placeholder="CONTOH: AHMAD BIN ALI" class="w-full mt-1 p-2 border rounded text-sm uppercase">
+        <!-- Arahan -->
+        <ol class="list-decimal list-inside text-xs mb-4 italic">
+            <li>Pelajar dikehendaki mendapatkan pengesahan status pengajian (tandatangan & cop) daripada Pusat Pengajian.</li>
+            <li>Pihak yang membuat pengesahan adalah dalam kalangan pentadbir Pusat Pengajian yang memiliki autoriti sahaja.</li>
+            <li>Borang yang telah dilengkapkan hendaklah dimuat naik di dalam borang permohonan secara atas talian.</li>
+        </ol>
+
+        <!-- Bahagian 1 -->
+        <div class="form-border mb-4">
+            <div class="bg-gray-200 font-bold p-1 border-b border-black">BAHAGIAN 1 - MAKLUMAT PELAJAR</div>
+            <div class="grid grid-cols-[150px_1fr] grid-border">
+                <div>Nama Pelajar</div>
+                <div class="uppercase" id="out-nama-pelajar"></div>
+                
+                <div>No. K.Pengenalan</div>
+                <div class="uppercase tracking-widest font-mono" id="out-kp-pelajar"></div>
+            </div>
         </div>
 
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-xs font-semibold text-slate-700">No. K/P (12 Digit Tanpa '-')</label>
-            <input type="text" id="icPelajar" maxlength="12" oninput="renderOverlay()" placeholder="040102021234" class="w-full mt-1 p-2 border rounded text-sm font-mono">
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-slate-700">No. Tel Bimbit</label>
-            <input type="text" id="telPelajar" oninput="renderOverlay()" placeholder="012-3456789" class="w-full mt-1 p-2 border rounded text-sm">
-          </div>
+        <!-- Bahagian 2 -->
+        <div class="form-border mb-4">
+            <div class="bg-gray-200 font-bold p-1 border-b border-black">BAHAGIAN 2 - MAKLUMAT PUSAT PENGAJIAN</div>
+            <div class="grid grid-cols-[200px_1fr] grid-border">
+                <div>Nama Pusat Pengajian</div>
+                <div class="uppercase font-bold" id="out-sekolah"></div>
+                
+                <div>No Pendaftaran Pondok (JHEAIK / JAKIM)</div>
+                <div class="uppercase" id="out-daftar"></div>
+                
+                <div>Nama Mudir / Pengetua</div>
+                <div class="uppercase" id="out-mudir"></div>
+                
+                <div>Alamat Pondok/ Madrasah/ Pusat Pengajian</div>
+                <div class="uppercase" id="out-alamat-sekolah"></div>
+            </div>
         </div>
 
-        <div>
-          <label class="text-xs font-semibold text-slate-700">Alamat E-mel</label>
-          <input type="email" id="emelPelajar" oninput="renderOverlay()" placeholder="pelajar@email.com" class="w-full mt-1 p-2 border rounded text-sm">
+        <!-- Bahagian 4 (Pengesahan) -->
+        <div class="form-border mb-4">
+            <div class="bg-gray-200 font-bold p-1 border-b border-black">BAHAGIAN 4 - PENGESAHAN PUSAT PENGAJIAN</div>
+            <div class="p-4 text-justify relative">
+                Dengan Nama Allah, Bahawasanya saya <span class="border-b border-dotted border-black inline-block w-64 text-center font-bold uppercase" id="out-mudir-sahkan"></span> 
+                mengesahkan penama pada borang ini adalah pelajar sepenuh masa di <span class="border-b border-dotted border-black inline-block w-64 text-center font-bold uppercase" id="out-sekolah-sahkan"></span>.
+                Saya juga bertanggungjawab di atas pengesahan pelajar ini.
+                <br><br>
+                Saya yang menjalankan amanah,
+                <br><br><br><br>
+                
+                <!-- Posisi imej cop & tandatangan -->
+                <div class="absolute right-10 bottom-10 opacity-90 mix-blend-multiply">
+                    <img id="img-cop" class="max-h-32 hidden">
+                </div>
+
+                <div class="flex justify-between items-end mt-12">
+                    <div>
+                        ---------------------------------------------<br>
+                        (Tandatangan)<br>
+                        <table class="mt-2 text-sm">
+                            <tr><td class="w-16">Nama</td><td>: <span class="uppercase font-bold" id="out-mudir-bawah"></span></td></tr>
+                            <tr><td>Jawatan</td><td>: <span class="uppercase" id="out-jawatan"></span></td></tr>
+                        </table>
+                    </div>
+                    <div class="text-center">
+                        ---------------------------------------------<br>
+                        (Cop Pondok/Madrasah)
+                    </div>
+                </div>
+            </div>
         </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-700">Alamat Surat Menyurat (Baris 1)</label>
-          <input type="text" id="alamatPelajar1" oninput="renderOverlay()" placeholder="NO 12, KAMPUNG..." class="w-full mt-1 p-2 border rounded text-sm uppercase">
+        
+        <div class="text-center font-bold text-xs mt-2 italic">
+            BORANG INI PERLU DIMUAT NAIK DALAM SISTEM PERMOHONAN SETELAH LENGKAP DIISI
         </div>
+    </div>
 
-        <div>
-          <label class="text-xs font-semibold text-slate-700">Alamat Surat Menyurat (Baris 2 - Pilihan)</label>
-          <input type="text" id="alamatPelajar2" oninput="renderOverlay()" placeholder="MUKIM..." class="w-full mt-1 p-2 border rounded text-sm uppercase">
-        </div>
+    <script>
+        // Init data dari localStorage
+        window.onload = function() {
+            document.getElementById('in-sekolah').value = localStorage.getItem('lznk_sekolah') || 'Madrasah Misbahul Falah';
+            document.getElementById('in-daftar').value = localStorage.getItem('lznk_daftar') || '';
+            document.getElementById('in-mudir').value = localStorage.getItem('lznk_mudir') || '';
+            document.getElementById('in-alamat-sekolah').value = localStorage.getItem('lznk_alamat') || 'Baling, Kedah';
+            document.getElementById('in-jawatan').value = localStorage.getItem('lznk_jawatan') || 'Mudir';
+            updateView();
+        }
 
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-xs font-semibold text-slate-700">Poskod (5 Digit)</label>
-            <input type="text" id="poskodPelajar" maxlength="5" oninput="renderOverlay()" placeholder="09100" class="w-full mt-1 p-2 border rounded text-sm font-mono">
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-slate-700">Negeri</label>
-            <input type="text" id="negeriPelajar" oninput="renderOverlay()" value="KEDAH" class="w-full mt-1 p-2 border rounded text-sm uppercase">
-          </div>
-        </div>
+        // Kemaskini paparan live
+        function updateView() {
+            const getVal = (id) => document.getElementById(id).value;
+            
+            document.getElementById('out-sekolah').innerText = getVal('in-sekolah');
+            document.getElementById('out-sekolah-sahkan').innerText = getVal('in-sekolah');
+            document.getElementById('out-daftar').innerText = getVal('in-daftar');
+            document.getElementById('out-mudir').innerText = getVal('in-mudir');
+            document.getElementById('out-mudir-sahkan').innerText = getVal('in-mudir');
+            document.getElementById('out-mudir-bawah').innerText = getVal('in-mudir');
+            document.getElementById('out-alamat-sekolah').innerText = getVal('in-alamat-sekolah');
+            document.getElementById('out-jawatan').innerText = getVal('in-jawatan');
+            
+            document.getElementById('out-nama-pelajar').innerText = getVal('in-nama-pelajar');
+            document.getElementById('out-kp-pelajar').innerText = getVal('in-kp-pelajar');
+        }
 
-        <div class="grid grid-cols-2 gap-2 pt-2 border-t">
-          <div>
-            <label class="text-xs font-semibold text-slate-700">Nama di Pengakuan (Bhg. 3)</label>
-            <input type="text" id="namaPengakuan" oninput="renderOverlay()" class="w-full mt-1 p-2 border rounded text-sm uppercase">
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-slate-700">Tarikh Pengakuan</label>
-            <input type="text" id="tarikhPengakuan" oninput="renderOverlay()" placeholder="12/11/2026" class="w-full mt-1 p-2 border rounded text-sm">
-          </div>
-        </div>
-      </div>
+        // Simpan data sekolah secara lokal
+        function saveLocal() {
+            localStorage.setItem('lznk_sekolah', document.getElementById('in-sekolah').value);
+            localStorage.setItem('lznk_daftar', document.getElementById('in-daftar').value);
+            localStorage.setItem('lznk_mudir', document.getElementById('in-mudir').value);
+            localStorage.setItem('lznk_alamat', document.getElementById('in-alamat-sekolah').value);
+            localStorage.setItem('lznk_jawatan', document.getElementById('in-jawatan').value);
+        }
 
-      <!-- TAB 2: MAKLUMAT PONDOK / SEKOLAH (KEKAL / AUTO-SAVE) -->
-      <div id="tab-pondok" class="space-y-3 hidden">
-        <div class="bg-blue-50 p-2.5 rounded border border-blue-200 text-xs text-blue-900">
-          Maklumat di bawah <strong>disimpan secara kekal</strong> di dalam pelayar telefon/komputer anda. Tak perlu isi berulang kali.
-        </div>
+        // Pratonton Cop/Tandatangan
+        function previewImage(event, targetId) {
+            const reader = new FileReader();
+            reader.onload = function() {
+                const output = document.getElementById(targetId);
+                output.src = reader.result;
+                output.style.display = 'block';
+            }
+            if(event.target.files[0]) {
+                reader.readAsDataURL(event.target.files[0]);
+            }
+        }
 
-        <div>
-          <label class="text-xs font-semibold text-slate-700">Nama Pusat Pengajian</label>
-          <input type="text" id="namaPondok" oninput="saveFixedData()" value="MADRASAH MISBAHUL FALAH (PONDOK LANAI)" class="w-full mt-1 p-2 border rounded text-sm uppercase">
-        </div>
+        // Fungsi Muat Turun PNG
+        function downloadPNG() {
+            const element = document.getElementById('borang-lznk');
+            html2canvas(element, {scale: 2}).then(canvas => {
+                const link = document.createElement('a');
+                const nama = document.getElementById('in-nama-pelajar').value || 'Pelajar';
+                link.download = `Borang_LZNK_${nama}.png`;
+                link.href = canvas.toDataURL('image/png');
+                link.click();
+            });
+        }
 
-        <div>
-          <label class="text-xs font-semibold text-slate-700">No. Pendaftaran Pondok (JHEAIK / JAKIM)</label>
-          <input type="text" id="noDaftarPondok" oninput="saveFixedData()" placeholder="Contoh: JHEAIK/..." class="w-full mt-1 p-2 border rounded text-sm uppercase">
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-700">Nama Mudir / Pengetua</label>
-          <input type="text" id="namaMudir" oninput="saveFixedData()" placeholder="NAMA PENUH MUDIR" class="w-full mt-1 p-2 border rounded text-sm uppercase">
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-700">Alamat Pondok (Baris 1)</label>
-          <input type="text" id="alamatPondok1" oninput="saveFixedData()" value="KAMPUNG LANAI, PARIT PANJANG," class="w-full mt-1 p-2 border rounded text-sm uppercase">
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-700">Alamat Pondok (Baris 2)</label>
-          <input type="text" id="alamatPondok2" oninput="saveFixedData()" value="09100 BALING, KEDAH DARUL AMAN" class="w-full mt-1 p-2 border rounded text-sm uppercase">
-        </div>
-
-        <hr class="my-2">
-        <h3 class="font-bold text-xs text-slate-800 uppercase">Bahagian 4: Maklumat Pengesah</h3>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-700">Nama Pengesah (Dalam Ayat Pengesahan & Bawah)</label>
-          <input type="text" id="namaPengesah" oninput="saveFixedData()" placeholder="NAMA PENUH PENGESAH" class="w-full mt-1 p-2 border rounded text-sm uppercase">
-        </div>
-
-        <div>
-          <label class="text-xs font-semibold text-slate-700">Nama Pondok (Dalam Ayat Bahagian 4)</label>
-          <input type="text" id="namaPondokBhg4" oninput="saveFixedData()" value="MADRASAH MISBAHUL FALAH" class="w-full mt-1 p-2 border rounded text-sm uppercase">
-        </div>
-
-        <div class="grid grid-cols-2 gap-2">
-          <div>
-            <label class="text-xs font-semibold text-slate-700">No. K/P Pengesah</label>
-            <input type="text" id="icPengesah" oninput="saveFixedData()" placeholder="750101-02-1234" class="w-full mt-1 p-2 border rounded text-sm">
-          </div>
-          <div>
-            <label class="text-xs font-semibold text-slate-700">Jawatan Pengesah</label>
+        // Fungsi Muat Turun PDF
+        function downloadPDF() {
+            window.jsPDF = window.jspdf.jsPDF;
+            const element = document.getElementById('borang-lznk');
+            
+            html2canvas(element, {scale: 2}).then(canvas => {
+                const imgData = canvas.toDataURL('image/png');
+                const pdf = new jsPDF('p', 'mm', 'a4');
+                const imgProps = pdf.getImageProperties(imgData);
+                const pdfWidth = pdf.internal.pageSize.getWidth();
+                const pdfHeight = (imgProps.height * pdfWidth) / imgProps.width;
+                
+                pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
+                const nama = document.getElementById('in-nama-pelajar').value || 'Pelajar';
+                pdf.save(`Borang_LZNK_${nama}.pdf`);
+            });
+        }
+    </script>
+</body>
+</html>
+00">Jawatan Pengesah</label>
             <input type="text" id="jawatanPengesah" oninput="saveFixedData()" value="MUDIR / PENGETUA" class="w-full mt-1 p-2 border rounded text-sm uppercase">
           </div>
         </div>
